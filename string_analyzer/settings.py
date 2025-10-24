@@ -15,34 +15,21 @@ import os
 from decouple import config
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
-
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# -------------------------------------------------
-# ENVIRONMENT SWITCHING
-# -------------------------------------------------
-# Default: development
-ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
-
-if ENVIRONMENT == "production":
-    load_dotenv(os.path.join(BASE_DIR, ".env"))
-else:
-    load_dotenv(os.path.join(BASE_DIR, ".env.development"))
-
-
 # ---------------- SECURITY SETTINGS ----------------
+# Load .env locally only
+dotenv_path = BASE_DIR / ".env"
+if dotenv_path.exists():
+    load_dotenv(dotenv_path)
+
 SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable not set!")
 
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
-
-
 
 
 # Application definition

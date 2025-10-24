@@ -6,22 +6,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ---------------- ENVIRONMENT DETECTION ----------------
 ENVIRONMENT = config("ENVIRONMENT", default="local").lower()
-
-if ENVIRONMENT == "production":
-    print("⚡ Running in PRODUCTION mode")
-else:
-    print("💻 Running in LOCAL development mode")
+print(f"💻 Running in {ENVIRONMENT.upper()} mode")
 
 # ---------------- SECURITY ----------------
-SECRET_KEY = config("SECRET_KEY")
-DEBUG = True if ENVIRONMENT == "local" else False
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*").split(",")
+if ENVIRONMENT == "local":
+    SECRET_KEY = config("SECRET_KEY", default="dev-secret-key")
+    DEBUG = True
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+else:  # production
+    SECRET_KEY = config("SECRET_KEY")  # MUST be set in env
+    DEBUG = False
+    ALLOWED_HOSTS = config("ALLOWED_HOSTS", default=".railway.app").split(",")
 
 # ---------------- DATABASE ----------------
 DB_ENGINE = config("DB_ENGINE", default="django.db.backends.sqlite3")
-
 if DB_ENGINE == "django.db.backends.sqlite3":
-    # Local dev database
     DATABASES = {
         "default": {
             "ENGINE": DB_ENGINE,
@@ -29,7 +28,6 @@ if DB_ENGINE == "django.db.backends.sqlite3":
         }
     }
 else:
-    # Production/PostgreSQL database
     DATABASES = {
         "default": {
             "ENGINE": DB_ENGINE,

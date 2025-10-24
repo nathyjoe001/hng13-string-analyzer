@@ -142,9 +142,9 @@ Postman
 cURL
 
 or directly through the Swagger Docs at
-👉 http://127.0.0.1:8000/swagger/
-or
-👉 https://string-analyzer-production.up.railway.app/swagger/
+👉 http://127.0.0.1:8000/docs/
+or directly create post in production
+👉 https://hng13-string-analyzer-production.up.railway.app/api/string-form/
 
 🧩 Environment Variables
 Variable	Description

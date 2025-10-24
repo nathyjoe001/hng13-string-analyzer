@@ -1,38 +1,36 @@
 from pathlib import Path
-from decouple import Config, RepositoryEnv
 import os
+from decouple import config
+from dotenv import load_dotenv
 
-# --------------------------------------------------
+# ----------------------------------------
 # BASE DIRECTORY
-# --------------------------------------------------
+# ----------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --------------------------------------------------
-# LOAD ENVIRONMENT FILE AUTOMATICALLY
-# --------------------------------------------------
-local_env = BASE_DIR / ".env.environment"
-prod_env = BASE_DIR / ".env"
+# ----------------------------------------
+# ENVIRONMENT LOADING
+# ----------------------------------------
+# Priority: .env.environment (local) → .env (production) → Railway variables
+env_file = BASE_DIR / ".env.environment" if os.path.exists(BASE_DIR / ".env.environment") else BASE_DIR / ".env"
 
-if prod_env.exists() and os.getenv("RAILWAY_ENVIRONMENT") == "production":
-    config = Config(RepositoryEnv(prod_env))
-    print("🌍 Using .env.production")
-elif local_env.exists():
-    config = Config(RepositoryEnv(local_env))
-    print("💻 Using .env.local")
+if os.path.exists(env_file):
+    load_dotenv(env_file)
+    print(f"✅ Loaded environment file: {env_file.name}")
 else:
-    raise FileNotFoundError("No environment file found (.env.environment or .env)")
+    print("⚠️ No .env file found — using Railway environment variables")
 
-# --------------------------------------------------
-# ENVIRONMENT SETTINGS
-# --------------------------------------------------
-ENVIRONMENT = config("ENVIRONMENT", default="local").lower()
-SECRET_KEY = config("SECRET_KEY")
-DEBUG = ENVIRONMENT == "local"
+# ----------------------------------------
+# CORE SETTINGS
+# ----------------------------------------
+ENVIRONMENT = os.getenv("ENVIRONMENT", "local").lower()
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret")
+DEBUG = True if ENVIRONMENT == "local" else False
 
 if ENVIRONMENT == "local":
-    ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 else:
-    ALLOWED_HOSTS = config("ALLOWED_HOSTS", default=".railway.app").split(",")
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", ".railway.app,localhost,127.0.0.1").split(",")
 
 # --------------------------------------------------
 # DATABASES

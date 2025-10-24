@@ -20,7 +20,7 @@ elif local_env.exists():
     config = Config(RepositoryEnv(local_env))
     print("💻 Using .env.local")
 else:
-    raise FileNotFoundError("No environment file found (.env.local or .env.production)")
+    raise FileNotFoundError("No environment file found (.env.environment or .env)")
 
 # --------------------------------------------------
 # ENVIRONMENT SETTINGS

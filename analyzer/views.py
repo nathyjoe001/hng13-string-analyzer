@@ -11,8 +11,15 @@ from rest_framework.exceptions import ValidationError
 from .models import StringRecord
 from .serializers import StringRecordSerializer
 from .utils import analyze_string
+from django.shortcuts import render
+
+
+
 
 logger = logging.getLogger('analyzer')
+
+def string_form_view(request):
+    return render(request, 'string_form.html')
 
 
 # ======================================================

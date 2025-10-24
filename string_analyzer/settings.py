@@ -97,6 +97,9 @@ WSGI_APPLICATION = "string_analyzer.wsgi.application"
 # --------------------------------------------------
 CORS_ALLOW_ALL_ORIGINS = True
 
+APPEND_SLASH = False
+
+
 # --------------------------------------------------
 # STATIC FILES
 # --------------------------------------------------

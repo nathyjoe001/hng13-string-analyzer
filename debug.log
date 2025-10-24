@@ -305,3 +305,7 @@ django.db.utils.OperationalError: no such table: analyzer_stringrecord
 "GET /api/strings HTTP/1.1" 500 145
 Not Found: /api/
 "GET /api/ HTTP/1.1" 404 179
+Not Found: /string-form/
+"GET /string-form/ HTTP/1.1" 404 2677
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 2674

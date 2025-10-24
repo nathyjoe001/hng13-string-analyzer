@@ -4,6 +4,8 @@ from .views import (
     StringDetailView,
     NaturalLanguageFilterView,
 )
+from django.urls import path
+from .views import string_form_view
 
 urlpatterns = [
     # 1️⃣ POST /api/strings  → create a string
@@ -16,4 +18,5 @@ urlpatterns = [
 
     # 5️⃣ GET or DELETE /api/strings/<string_value>
     path("strings/<str:string_value>", StringDetailView.as_view(), name="strings_detail"),
+    path('string-form/', string_form_view, name='string_form'),
 ]

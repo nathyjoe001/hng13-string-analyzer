@@ -26,6 +26,6 @@ class StringRecord(models.Model):
         
         super().save(*arg, **kwarg)
 
-        def __str__(self):
-            return self.value
+    def __str__(self):
+        return self.value
         

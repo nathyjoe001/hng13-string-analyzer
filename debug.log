@@ -4,3 +4,25 @@ Not Found: /favicon.ico
 "GET /favicon.ico HTTP/1.1" 404 179
 Not Found: /
 "GET / HTTP/1.1" 404 2480
+Not Found: /
+"GET / HTTP/1.1" 404 179
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 179
+Not Found: /static/drf-yasg/swagger-ui-dist/swagger-ui.css
+Not Found: /static/drf-yasg/swagger-ui-dist/swagger-ui-bundle.js
+"GET /static/drf-yasg/swagger-ui-dist/swagger-ui.css HTTP/1.1" 404 179
+Not Found: /static/drf-yasg/swagger-ui-dist/swagger-ui-standalone-preset.js
+"GET /static/drf-yasg/swagger-ui-dist/swagger-ui-bundle.js HTTP/1.1" 404 179
+Not Found: /static/drf-yasg/swagger-ui-init.js
+"GET /static/drf-yasg/swagger-ui-dist/swagger-ui-standalone-preset.js HTTP/1.1" 404 179
+Not Found: /static/drf-yasg/style.css
+Not Found: /static/drf-yasg/insQ.min.js
+"GET /static/drf-yasg/swagger-ui-init.js HTTP/1.1" 404 179
+Not Found: /static/drf-yasg/immutable.min.js
+"GET /static/drf-yasg/style.css HTTP/1.1" 404 179
+"GET /static/drf-yasg/insQ.min.js HTTP/1.1" 404 179
+"GET /static/drf-yasg/immutable.min.js HTTP/1.1" 404 179
+Not Found: /accounts/login/
+"GET /accounts/login/?next=/docs/ HTTP/1.1" 404 179
+Not Found: /accounts/login/
+"GET /accounts/login/?next=/docs/ HTTP/1.1" 404 2555

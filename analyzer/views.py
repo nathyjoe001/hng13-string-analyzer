@@ -4,11 +4,10 @@ from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework import status
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.generics import ListAPIView
 from rest_framework.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 from .models import StringRecord
 from .serializers import StringRecordSerializer
 from .utils import analyze_string
@@ -17,121 +16,13 @@ logger = logging.getLogger('analyzer')
 
 
 # ======================================================
-# 1️⃣  Create new analyzed string
+# 1️⃣ & 3️⃣  Create new analyzed string & list all strings
 # ======================================================
-class AnalyzeStringView(APIView):
-    @swagger_auto_schema(
-        operation_description="Handles creation of new analyzed strings (POST).",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'value': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description='String to analyze'
-                ),
-            },
-            required=['value'],
-        ),
-        responses={
-            201: openapi.Response('Created', StringRecordSerializer),
-            400: 'Invalid request body or missing "value" field',
-            422: 'Invalid data type for "value" (must be string)',
-            409: 'String already exists in the system'
-        }
-    )
-    def post(self, request):
-        value = request.data.get("value")
-
-        # 400 — Missing 'value' field
-        if value is None or str(value).strip() == "":
-            return Response(
-                {"error": "Invalid request body or missing 'value' field"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # 422 — Wrong data type
-        if not isinstance(value, str):
-            return Response(
-                {"error": "Invalid data type for 'value' (must be string)"},
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY
-            )
-
-        # 409 — Already exists
-        if StringRecord.objects.filter(value=value).exists():
-            return Response(
-                {"error": "String already exists in the system"},
-                status=status.HTTP_409_CONFLICT
-            )
-
-        # Analyze and store
-        props = analyze_string(value)
-        record = StringRecord.objects.create(
-            value=value,
-            length=props["length"],
-            is_palindrome=props["is_palindrome"],
-            unique_characters=props["unique_characters"],
-            word_count=props["word_count"],
-            character_frequency_map=props["character_frequency_map"],
-        )
-
-        serializer = StringRecordSerializer(record)
-        logger.info(f"Analyzed new string: {value}")
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-# ======================================================
-# 2️⃣  Retrieve or delete specific string
-# ======================================================
-class StringDetailView(APIView):
-    """Retrieve or delete a specific analyzed string"""
-
-    @swagger_auto_schema(
-        operation_description="Get details for a specific string by its value.",
-        responses={
-            200: openapi.Response('OK', StringRecordSerializer),
-            404: 'String does not exist in the system',
-        }
-    )
-    def get(self, request, string_value):
-        record = StringRecord.objects.filter(value=string_value).first()
-        if not record:
-            return Response(
-                {"error": "String does not exist in the system"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = StringRecordSerializer(record)
-        logger.info(f"Retrieved string: {string_value}")
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_description="Delete a specific analyzed string by its value.",
-        responses={
-            204: 'String deleted successfully',
-            404: 'String does not exist in the system'
-        }
-    )
-    def delete(self, request, string_value):
-        record = StringRecord.objects.filter(value=string_value).first()
-        if not record:
-            return Response(
-                {"error": "String does not exist in the system"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        record.delete()
-        logger.warning(f"Deleted string: {string_value}")
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# ======================================================
-# 3️⃣  Get all strings with query filtering
-# ======================================================
-class StringListView(ListAPIView):
+class StringListCreateView(ListCreateAPIView):
     serializer_class = StringRecordSerializer
 
     @swagger_auto_schema(
-        operation_description="Retrieve all analyzed strings with optional filters.",
+        operation_description="Retrieve all analyzed strings (GET) or create a new analyzed string (POST).",
         manual_parameters=[
             openapi.Parameter(
                 'is_palindrome', openapi.IN_QUERY,
@@ -159,21 +50,24 @@ class StringListView(ListAPIView):
                 type=openapi.TYPE_STRING
             ),
         ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'value': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='String to analyze'
+                ),
+            },
+            required=['value'],
+        ),
         responses={
-            200: openapi.Response('Success', StringRecordSerializer(many=True)),
-            400: 'Invalid query parameter values or types'
+            200: openapi.Response('List of strings', StringRecordSerializer(many=True)),
+            201: openapi.Response('Created', StringRecordSerializer),
+            400: 'Invalid request or query parameters',
+            422: 'Invalid data type for "value"',
+            409: 'String already exists'
         }
     )
-    def get(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-        filters_applied = {k: v for k, v in request.query_params.items()}
-        return Response({
-            "data": serializer.data,
-            "count": queryset.count(),
-            "filters_applied": filters_applied
-        })
-
     def get_queryset(self):
         queryset = StringRecord.objects.all()
         params = self.request.query_params
@@ -205,22 +99,59 @@ class StringListView(ListAPIView):
         except ValueError:
             raise ValidationError({"error": "Invalid query parameter values or types"})
 
+    def create(self, request, *args, **kwargs):
+        value = request.data.get("value")
+
+        if value is None or str(value).strip() == "":
+            return Response({"error": "Invalid request body or missing 'value' field"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not isinstance(value, str):
+            return Response({"error": "Invalid data type for 'value' (must be string)"},
+                            status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        if StringRecord.objects.filter(value=value).exists():
+            return Response({"error": "String already exists in the system"},
+                            status=status.HTTP_409_CONFLICT)
+
+        props = analyze_string(value)
+        record = StringRecord.objects.create(
+            value=value,
+            length=props["length"],
+            is_palindrome=props["is_palindrome"],
+            unique_characters=props["unique_characters"],
+            word_count=props["word_count"],
+            character_frequency_map=props["character_frequency_map"],
+        )
+
+        serializer = StringRecordSerializer(record)
+        logger.info(f"Analyzed new string: {value}")
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# ======================================================
+# 2️⃣  Retrieve or delete specific string
+# ======================================================
+class StringDetailView(APIView):
+    def get(self, request, string_value):
+        record = StringRecord.objects.filter(value=string_value).first()
+        if not record:
+            return Response({"error": "String does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = StringRecordSerializer(record)
+        return Response(serializer.data)
+
+    def delete(self, request, string_value):
+        record = StringRecord.objects.filter(value=string_value).first()
+        if not record:
+            return Response({"error": "String does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        record.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 # ======================================================
 # 4️⃣  Natural Language Filtering
 # ======================================================
 class NaturalLanguageFilterView(APIView):
-    @swagger_auto_schema(
-        operation_description="Filter strings using natural language queries (e.g. 'all single word palindromic strings').",
-        manual_parameters=[
-            openapi.Parameter('query', openapi.IN_QUERY, description="Natural language query", type=openapi.TYPE_STRING),
-        ],
-        responses={
-            200: "Success",
-            400: "Unable to parse natural language query",
-            422: "Query parsed but resulted in conflicting filters"
-        }
-    )
     def get(self, request):
         query = request.query_params.get("query", "")
         if not query.strip():
@@ -229,7 +160,6 @@ class NaturalLanguageFilterView(APIView):
         parsed_filters = {}
         q_lower = query.lower()
 
-        # Heuristic parsing logic
         if "palindromic" in q_lower:
             parsed_filters["is_palindrome"] = True
         if "single word" in q_lower or "one word" in q_lower:
@@ -260,8 +190,5 @@ class NaturalLanguageFilterView(APIView):
         return Response({
             "data": serializer.data,
             "count": queryset.count(),
-            "interpreted_query": {
-                "original": query,
-                "parsed_filters": parsed_filters
-            }
+            "interpreted_query": {"original": query, "parsed_filters": parsed_filters}
         })

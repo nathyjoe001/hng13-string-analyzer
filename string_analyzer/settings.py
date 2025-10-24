@@ -1,23 +1,42 @@
 from pathlib import Path
-from decouple import config
+from decouple import Config, RepositoryEnv
 import os
 
+# --------------------------------------------------
+# BASE DIRECTORY
+# --------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ---------------- ENVIRONMENT DETECTION ----------------
+# --------------------------------------------------
+# LOAD ENVIRONMENT FILE AUTOMATICALLY
+# --------------------------------------------------
+local_env = BASE_DIR / ".env.environment"
+prod_env = BASE_DIR / ".env"
+
+if prod_env.exists() and os.getenv("RAILWAY_ENVIRONMENT") == "production":
+    config = Config(RepositoryEnv(prod_env))
+    print("🌍 Using .env.production")
+elif local_env.exists():
+    config = Config(RepositoryEnv(local_env))
+    print("💻 Using .env.local")
+else:
+    raise FileNotFoundError("No environment file found (.env.local or .env.production)")
+
+# --------------------------------------------------
+# ENVIRONMENT SETTINGS
+# --------------------------------------------------
 ENVIRONMENT = config("ENVIRONMENT", default="local").lower()
-
-# ---------------- SECURITY ----------------
 SECRET_KEY = config("SECRET_KEY")
-
-DEBUG = True if ENVIRONMENT == "local" else False
+DEBUG = ENVIRONMENT == "local"
 
 if ENVIRONMENT == "local":
     ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
 else:
-    ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")  # e.g. .railway.app
+    ALLOWED_HOSTS = config("ALLOWED_HOSTS", default=".railway.app").split(",")
 
-# ---------------- DATABASE ----------------
+# --------------------------------------------------
+# DATABASES
+# --------------------------------------------------
 DB_ENGINE = config("DB_ENGINE", default="django.db.backends.sqlite3")
 
 if DB_ENGINE == "django.db.backends.sqlite3":
@@ -39,17 +58,24 @@ else:
         }
     }
 
-# ---------------- APPS & MIDDLEWARE ----------------
+# --------------------------------------------------
+# APPLICATIONS
+# --------------------------------------------------
 INSTALLED_APPS = [
+    # Default Django apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # Third-party apps
     "corsheaders",
     "rest_framework",
     "drf_yasg",
+
+    # Local apps
     "analyzer",
 ]
 
@@ -68,17 +94,26 @@ MIDDLEWARE = [
 ROOT_URLCONF = "string_analyzer.urls"
 WSGI_APPLICATION = "string_analyzer.wsgi.application"
 
-# ---------------- CORS ----------------
+# --------------------------------------------------
+# CORS
+# --------------------------------------------------
 CORS_ALLOW_ALL_ORIGINS = True
 
-# ---------------- STATIC FILES ----------------
+# --------------------------------------------------
+# STATIC FILES
+# --------------------------------------------------
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ---------------- REST FRAMEWORK ----------------
+# --------------------------------------------------
+# REST FRAMEWORK
+# --------------------------------------------------
 REST_FRAMEWORK = {
-    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer" if DEBUG else "rest_framework.renderers.JSONRenderer",
+    ],
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
@@ -86,7 +121,19 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {"anon": "5/minute", "user": "20/minute"},
 }
 
-# ---------------- TEMPLATES ----------------
+# --------------------------------------------------
+# SWAGGER (drf_yasg)
+# --------------------------------------------------
+SWAGGER_SETTINGS = {
+    "USE_SESSION_AUTH": False,
+    "JSON_EDITOR": True,
+    "DEFAULT_INFO": "string_analyzer.urls.api_info",
+}
+REDOC_SETTINGS = {"LAZY_RENDERING": True}
+
+# --------------------------------------------------
+# TEMPLATES
+# --------------------------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -98,12 +145,14 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-            ]
+            ],
         },
-    }
+    },
 ]
 
-# ---------------- PASSWORD VALIDATORS ----------------
+# --------------------------------------------------
+# PASSWORD VALIDATORS
+# --------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -111,13 +160,17 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# ---------------- INTERNATIONALIZATION ----------------
+# --------------------------------------------------
+# INTERNATIONALIZATION
+# --------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# ---------------- LOGGING ----------------
+# --------------------------------------------------
+# LOGGING
+# --------------------------------------------------
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -135,5 +188,12 @@ LOGGING = {
     },
 }
 
-# ---------------- DEFAULTS ----------------
+# --------------------------------------------------
+# DEFAULT FIELD
+# --------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# --------------------------------------------------
+# ENVIRONMENT PRINT
+# --------------------------------------------------
+print(f"✅ Running in {ENVIRONMENT.upper()} mode | DEBUG={DEBUG}")

@@ -115,11 +115,9 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer" if DEBUG else "rest_framework.renderers.JSONRenderer",
     ],
-    "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
-    ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "5/minute", "user": "20/minute"},
+    "DEFAULT_THROTTLE_CLASSES": [],
+
+    "DEFAULT_THROTTLE_RATES": {},
 }
 
 # --------------------------------------------------

@@ -1,14 +1,12 @@
 from rest_framework import serializers
-from drf_yasg import openapi
 from .models import StringRecord
-
 
 class StringRecordSerializer(serializers.ModelSerializer):
     properties = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = StringRecord
-        fields = ['id', 'value', 'properties', 'created_at']
+        fields = ['id', 'value', 'properties', 'created_at']  # include id and properties
         read_only_fields = ['id', 'properties', 'created_at']
 
     def get_properties(self, obj):

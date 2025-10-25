@@ -1,16 +1,9 @@
-
-import uuid
 import hashlib
 from django.db import models
 from django.utils import timezone
 
-# Create your models here.
 class StringRecord(models.Model):
-    id = models.UUIDField(
-        primary_key=True, 
-        default=uuid.uuid4, 
-        editable=False
-        )
+    id = models.CharField(primary_key=True, max_length=64, editable=False)  # use hash as ID
     value = models.TextField(unique=True)
     sha256_hash = models.CharField(max_length=64, unique=True)
     length = models.IntegerField()
@@ -20,12 +13,12 @@ class StringRecord(models.Model):
     character_frequency_map = models.JSONField()
     created_at = models.DateTimeField(default=timezone.now)
 
-    def save (self, *arg, **kwarg):
-        self.sha256_hash = hashlib.sha256(
-            self.value.encode('utf-8')).hexdigest()
-        
-        super().save(*arg, **kwarg)
+    def save(self, *args, **kwargs):
+        # Compute SHA-256 hash
+        self.sha256_hash = hashlib.sha256(self.value.encode('utf-8')).hexdigest()
+        # Set hash as ID
+        self.id = self.sha256_hash
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.value
-        

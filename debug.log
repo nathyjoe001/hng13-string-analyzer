@@ -309,3 +309,7 @@ Not Found: /string-form/
 "GET /string-form/ HTTP/1.1" 404 2677
 Not Found: /favicon.ico
 "GET /favicon.ico HTTP/1.1" 404 2674
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 2674
+Bad Request: /api/strings/filter-by-natural-language
+"GET /api/strings/filter-by-natural-language HTTP/1.1" 400 29

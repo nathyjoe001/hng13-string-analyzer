@@ -313,3 +313,5 @@ Not Found: /favicon.ico
 "GET /favicon.ico HTTP/1.1" 404 2674
 Bad Request: /api/strings/filter-by-natural-language
 "GET /api/strings/filter-by-natural-language HTTP/1.1" 400 29
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 3393

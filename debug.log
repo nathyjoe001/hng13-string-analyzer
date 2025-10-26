@@ -321,3 +321,19 @@ Bad Request: /strings
 "POST /strings HTTP/1.1" 400 57
 Bad Request: /strings/filter-by-natural-language
 "GET /strings/filter-by-natural-language HTTP/1.1" 400 29
+Not Found: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language?query=palindromic%2C%20longer%20than%205%2C%20letter%20j HTTP/1.1" 404 47
+Not Found: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language?query=palindromic%2C%20longer%20than%205%2C%20letter%20p HTTP/1.1" 404 47
+Not Found: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language?query=palindromic%2C%20lesser%20than%205 HTTP/1.1" 404 47
+Not Found: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language?query=palindromic%2C%20lesser%20than%205%2C%20letter%20p HTTP/1.1" 404 47
+Not Found: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language?query=palindromic%2C%20lesser%20than%205%2C%20letter%20s HTTP/1.1" 404 47
+Not Found: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language?query=palindromic%2C%20longer%20than%205%2C%20letter%20s HTTP/1.1" 404 47
+Not Found: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language?query=palindromic%2C%20longer%20than%202 HTTP/1.1" 404 47
+Not Found: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language?query=%20longer%20than%202 HTTP/1.1" 404 47

@@ -315,3 +315,9 @@ Bad Request: /api/strings/filter-by-natural-language
 "GET /api/strings/filter-by-natural-language HTTP/1.1" 400 29
 Not Found: /favicon.ico
 "GET /favicon.ico HTTP/1.1" 404 3393
+Conflict: /strings
+"POST /strings HTTP/1.1" 409 47
+Bad Request: /strings
+"POST /strings HTTP/1.1" 400 57
+Bad Request: /strings/filter-by-natural-language
+"GET /strings/filter-by-natural-language HTTP/1.1" 400 29

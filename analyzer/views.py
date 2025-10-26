@@ -106,18 +106,25 @@ class StringListCreateView(ListCreateAPIView):
 
         # 400 — missing value
         if value is None or (isinstance(value, str) and value.strip() == ""):
-            return Response({"error": "Invalid request body or missing 'value' field"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid request body or missing 'value' field"
+                 }, status=status.HTTP_400_BAD_REQUEST)
 
         # 422 — not a string
         if not isinstance(value, str):
-            return Response({"error": "Invalid data type for 'value' (must be string)"}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return Response(
+                {"error": "Invalid data type for 'value' (must be string)"}, 
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         # 409 — duplicate
         # Use sha256 to check existence OR value unique constraint
         props = analyze_string(value)
         sha = props["sha256_hash"]
+        
         if StringRecord.objects.filter(id=sha).exists() or StringRecord.objects.filter(value=value).exists():
-            return Response({"error": "String already exists in the system"}, status=status.HTTP_409_CONFLICT)
+            return Response(
+                {"error": "String already exists in the system"}, 
+                status=status.HTTP_409_CONFLICT)
 
         # create and return the exact response shape
         record = StringRecord.objects.create(
@@ -181,7 +188,9 @@ class StringDetailView(APIView):
     def get(self, request, string_value):
         record = StringRecord.objects.filter(value=string_value).first()
         if not record:
-            return Response({"error": "String does not exist in the system"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "String does not exist in the system"}, 
+                status=status.HTTP_404_NOT_FOUND)
         serializer = StringRecordSerializer(record)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -210,7 +219,9 @@ class StringDetailView(APIView):
     def delete(self, request, string_value):
         record = StringRecord.objects.filter(value=string_value).first()
         if not record:
-            return Response({"error": "String does not exist in the system"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "String does not exist in the system"}, 
+                status=status.HTTP_404_NOT_FOUND)
         record.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -272,7 +283,8 @@ class NaturalLanguageFilterView(APIView):
     def get(self, request):
         query = request.query_params.get("query", "")
         if not query or not query.strip():
-            return Response({"error": "Query is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Query is required"}, 
+                            status=status.HTTP_400_BAD_REQUEST)
 
         parsed = {}
         ql = query.lower()
@@ -289,7 +301,9 @@ class NaturalLanguageFilterView(APIView):
             parsed["contains_character"] = m.group(1)
 
         if not parsed:
-            return Response({"error": "Unable to parse natural language query"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Unable to parse natural language query"},
+                  status=status.HTTP_400_BAD_REQUEST)
 
         qs = StringRecord.objects.all()
         if parsed.get("is_palindrome"):

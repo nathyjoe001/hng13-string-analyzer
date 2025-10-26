@@ -1,4 +1,3 @@
-# analyzer/urls.py
 from django.urls import path
 from .views import (
     StringListCreateView,
@@ -6,9 +5,8 @@ from .views import (
     NaturalLanguageFilterView,
 )
 
-
 urlpatterns = [
-    path("strings", StringListCreateView.as_view(), name="strings_list_create"),
-    path("strings/filter-by-natural-language", NaturalLanguageFilterView.as_view(), name="strings_filter_by_natural_language"),
-    path("strings/<str:string_value>", StringDetailView.as_view(), name="strings_detail"),
+    path("strings/", StringListCreateView.as_view(), name="strings_list_create"),
+    path("strings/filter-by-natural-language/", NaturalLanguageFilterView.as_view(), name="strings_filter_by_natural_language"),
+    path("strings/<str:string_value>/", StringDetailView.as_view(), name="strings_detail"),
 ]
